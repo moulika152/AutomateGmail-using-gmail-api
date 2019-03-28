@@ -17,7 +17,7 @@ Technology stack:-
 How to run:-
 1. get the Google api credentials:-
 	** https://developers.google.com/gmail/api/quickstart/python
-		-> enable the gmail api and dwnload the credentials.json file.
+		-> enable the gmail api and download the credentials.json file.
 		-> store it in the working directory of the project.
 2. install 'pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib'
 3. run quickstart.py to get authentication to gmail account given in the above link
