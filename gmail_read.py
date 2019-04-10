@@ -6,7 +6,11 @@ import base64
 from bs4 import BeautifulSoup
 import dateutil.parser as parser
 import csv
+from operator import itemgetter
+import re
+
 def gmailRead():
+
 	## To authorize your account
 	SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
 	store = file.Storage('storage.json') 
@@ -24,7 +28,7 @@ def gmailRead():
 	subject_list = [ ]
 	no_of_terms = input("\nEnter the no. of subjects u want to search: ")
 	no_of_terms = int(no_of_terms)
-	print("\nenter the subjects u wanna search for one by one ")
+	print("\nenter the key terms in subjects u wanna search for one by one ")
 
 	for i in range(no_of_terms):
 		temp_subject = input("subject: ")
@@ -106,47 +110,56 @@ def gmailRead():
 			soup = BeautifulSoup(clean_two , "lxml" )
 			mssg_body = soup.body()
 			temp_dict['Message_body'] = mssg_body
-
 		except :
 			pass
-
 		## append to the finalList each time
 		final_list.append(temp_dict)
 
-	## output the fetched mails to aa .csv file fo further processing
-	with open('OutputFile.csv', 'w', encoding='utf-8', newline = '') as csvfile:
-		fieldnames = ['Sender','Subject','Date','Snippet','Message_body', 'Recipient']
-		writer = csv.DictWriter(csvfile, fieldnames=fieldnames, delimiter = ',')
-		writer.writeheader()
-		for val in final_list:
-			writer.writerow(val)
+	# print(final_list)
 
-	## read the .csv file and make use of ur actions to work on them
-	subjects = [ ]
-	dates = [ ]
-	recipients = [ ]
-	senders = [ ]
+	## extract the 'Subject's from the final_list
+	subject_list = [i["Subject"] for i in final_list]
 
-	with open('OutputFile.csv', encoding='utf-8') as csvfile:
-		readCSV = csv.reader(csvfile, delimiter=',')
-		for row in readCSV:
-			r_subject = row[1]
-			r_date = row[2]
-			r_recipient = row[5]
-			r_sender = row[0]
+	# print(subject_list)
 
-			subjects.append(r_subject)
-			dates.append(r_date)
-			recipients.append(r_recipient)
-			senders.append(r_sender)
+	## splitting the subject into words/key terms
+	i=0
+	subject_dict = { }
+	for item in subject_list:
+		split_list = re.split(r'\s',item)
+		subject_dict[i]=split_list
+		i= i+1
 
-	print("Sender\t\t\t\t\t\t\t\t\tRecipient\t\t\t\tDate\t\t\t\t\tSubject")
-	print("=============================================================================================================================================================================================")
-	for s, d, r, se in zip(subjects, dates, recipients, senders):
-		if d>= user_date:
-			for item in subject_list:
-				item = item.upper()
-				if item == s:
-					print(se,'\t\t\t'+r+'\t\t\t'+d+'\t\t\t'+s+'\n')
+	# print(subject_dict)
+
+	project_dict = [ ]
+	for key, value in subject_dict.items():
+		for item in value:
+			temp = re.compile(r't(.*)e|s(.*)p|gal|a(.*)e',re.I)
+			if temp.search(item) is not None:
+				project_dict.append(temp.search(item).group(0))
+
+	## remove the duplicate items in the list
+	project_dict = set(project_dict)
+	##Convert to the list back again
+	project_list = list(project_dict)
+	# print(project_list)
+
+	## to verify successfull completion of the task
+	flag = 0
+
+	## output the required output to the csv file
+	with open('final.csv','w', newline='') as csvfile:
+		csvfile.write("project\n")
+		for entry in project_list:
+			csvfile.write(entry)
+			csvfile.write("\n")
+			flag = 1
+
+	if(flag):
+		print("\n\nSuccessfull........\n\nOutput can be found in the \'final.csv\' file in the same directory...")
+
+
+
 
 gmailRead()
