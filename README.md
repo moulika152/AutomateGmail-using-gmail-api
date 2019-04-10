@@ -28,3 +28,4 @@ How to run:-
       iii)pip3 install python-dateutil
 5. run the gmail_read.py file and authorize again.
 6. enter the Date and the subjects you want to search and get the result.
+7. the result will be the required search pattern you are searching for.
